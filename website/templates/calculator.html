@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Calculator{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <br />
+    <h1>Calculator</h1>
+
+    <div id="calculator">
+      <input type="text" id="display" readonly>
+
+      <div class="row">
+        <button class="btn" onclick="appendToDisplay('7')">7</button>
+        <button class="btn" onclick="appendToDisplay('8')">8</button>
+        <button class="btn" onclick="appendToDisplay('9')">9</button>
+        <button class="btn operator" onclick="appendToDisplay('/')">/</button>
+      </div>
+
+      <div class="row">
+        <button class="btn" onclick="appendToDisplay('4')">4</button>
+        <button class="btn" onclick="appendToDisplay('5')">5</button>
+        <button class="btn" onclick="appendToDisplay('6')">6</button>
+        <button class="btn operator" onclick="appendToDisplay('*')">*</button>
+      </div>
+
+      <div class="row">
+        <button class="btn" onclick="appendToDisplay('1')">1</button>
+        <button class="btn" onclick="appendToDisplay('2')">2</button>
+        <button class="btn" onclick="appendToDisplay('3')">3</button>
+        <button class="btn operator" onclick="appendToDisplay('-')">-</button>
+      </div>
+
+      <div class="row">
+        <button class="btn" onclick="appendToDisplay('0')">0</button>
+        <button class="btn" onclick="appendToDisplay('.')">.</button>
+        <button class="btn operator" onclick="clearDisplay()">C</button>
+        <button class="btn operator" onclick="appendToDisplay('+')">+</button>
+      </div>
+
+      <div class="row">
+        <button class="btn equal" onclick="calculate()">=</button>
+      </div>
+    </div>
+
+    <!-- History of Calculations -->
+    <div id="history">
+      <h2>Calculation History</h2>
+      <ul id="historyList"></ul>
+    </div>
+  </div>
+
+  <style>
+    .row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .btn {
+      width: 70px;
+      height: 70px;
+      font-size: 1.5em;
+    }
+
+    .operator {
+      background-color: #f0f0f0;
+    }
+
+    .equal {
+      background-color: #28a745;
+      color: white;
+    }
+
+    #display {
+      width: 100%;
+      border: 1px solid #000;
+      height: 40px;
+      font-size: 1.2em;
+      margin-bottom: 10px;
+    }
+
+    #history {
+      margin-top: 20px;
+    }
+
+    #historyList {
+      list-style: none;
+      max-height: 150px;
+      overflow-y: auto;
+      padding: 10px;
+      border: 3px solid #ddd;
+      background-color: #f9f9f9;
+    }
+  </style>
+
+  <script>
+    function appendToDisplay(value) {
+      document.getElementById("display").value += value;
+    }
+
+    function clearDisplay() {
+      document.getElementById("display").value = '';
+    }
+
+    function calculate() {
+      var expression = document.getElementById("display").value;
+      var result;
+
+      try {
+        result = eval(expression);
+        document.getElementById("display").value = result;
+        updateHistory(expression + " = " + result);
+      } catch (error) {
+        document.getElementById("display").value = 'Error';
+        updateHistory(expression + " = Error");
+      }
+    }
+
+    function updateHistory(entry) {
+      var historyList = document.getElementById("historyList");
+      var listItem = document.createElement("li");
+      listItem.appendChild(document.createTextNode(entry));
+      historyList.appendChild(listItem);
+    }
+  </script>
+
+{% endblock %}

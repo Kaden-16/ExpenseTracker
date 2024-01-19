@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Expenses{% endblock %}
+
+{% block content %}
+<div class="flex-parent-element" style="display: flex; justify-content: space-between;">
+  <div class = "flex-child">
+      <h1>Variable Expenses</h1>
+      <!-- Form for adding expenses -->
+      <form method="POST" action="{{ url_for('views.expenses') }}">
+        <label for="expense">Expense: &nbsp;</label>
+        <input type="text" id="expense" name="expense" required oninput="capitalizeDescription(this)">
+        <br />
+        <label for="amount">Amount: $</label>
+        <input type="number" id="amount" name="amount" min="0" step="0.01" required>
+        <br />
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" required>
+        <br />
+        <button type="submit">Add Expense</button>
+        <br />
+        <br />
+      </form>
+
+      <!-- Sorting options -->
+      <div>
+        <label for="sortSelect">Sort by:</label>
+        <select id="sortSelect" onchange="location = this.value;">
+          <option value="{{ url_for('views.expenses', sort_by='default') }}">Pick a sorting option</option>
+          <option value="{{ url_for('views.expenses', sort_by='amount_asc') }}">Amount (Ascending)</option>
+          <option value="{{ url_for('views.expenses', sort_by='amount_desc') }}">Amount (Descending)</option>
+          <option value="{{ url_for('views.expenses', sort_by='date_asc') }}">Date (Ascending)</option>
+          <option value="{{ url_for('views.expenses', sort_by='date_desc') }}">Date (Descending)</option>
+        </select>
+      </div>
+
+      <!-- Display the list of expenses -->
+      <h2>Expense List:</h2>
+      <ul style="list-style: none; padding: 0;">
+        {% for expense in expenses %}
+          <li style="margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; position: relative;">
+            <strong>{{ expense.description }}</strong><br>
+            Amount: <span id="expenseAmount{{ expense.id }}">{{ expense.amount }}</span><br>
+            Date: {{ expense.date.strftime('%m-%d-%Y') }}<br>
+            <button type="button" class="close" style="position: absolute; top: 10px; right: 10px;" onClick="deleteExpense('{{ expense.id }}', 'regular')">Delete</button>
+          </li>
+          <script>
+            var expenseAmount = document.getElementById("expenseAmount{{ expense.id }}");
+            expenseAmount.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(parseFloat(expenseAmount.textContent));
+          </script>
+        {% endfor %}
+      </ul>
+
+      <!-- Display the total expense -->
+      <h2>Total Expenses: <span id="totalExpense">{{ total_expense }}<span/></h2>
+      <script>
+        var totalExpense = document.getElementById("totalExpense");
+        totalExpense.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(parseFloat(totalExpense.textContent));
+      </script>
+  </div>
+
+  <br />
+  <br />
+
+  <div class = "flex-child">
+      <h1>Fixed Expenses</h1>
+
+      <!-- Form for adding expenses -->
+      <form method="POST" action="{{ url_for('views.expenses') }}">
+        <label for="fixed_expense">Expense: &nbsp;</label>
+        <input type="text" id="fixed_expense" name="fixed_expense" required oninput="capitalizeDescription(this)">
+        <br />
+        <label for="fixed_amount">Amount: $</label>
+        <input type="number" id="fixed_amount" name="fixed_amount" min="0" step="0.01" required>
+        <br />
+        <button type="submit">Add Expense</button>
+        <br />
+        <br />
+      </form>
+
+      <!-- Sorting options -->
+      <div>
+        <label for="fixed_sortSelect">Sort by:</label>
+        <select id="fixed_sortSelect" onchange="location = this.value;">
+          <option value="{{ url_for('views.expenses', sort_by='fixed_default') }}">Pick a sorting option</option>
+          <option value="{{ url_for('views.expenses', sort_by='fixed_amount_asc') }}">Amount (Ascending)</option>
+          <option value="{{ url_for('views.expenses', sort_by='fixed_amount_desc') }}">Amount (Descending)</option>
+        </select>
+      </div>
+
+      <!-- Display the list of expenses -->
+      <h2>Expense List:</h2>
+      <ul style="list-style: none; padding: 0;">
+        {% for fixed_expense in fixed_expenses %}
+          <li style="margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; position: relative;">
+            <strong>{{ fixed_expense.description }}</strong><br>
+            Amount: <span id="fixedExpenseAmount{{ fixed_expense.id }}">{{ fixed_expense.amount }}</span><br>
+            <button type="button" class="close" style="position: absolute; top: 10px; right: 10px;" onClick="deleteExpense('{{ fixed_expense.id }}', 'fixed')">Delete</button>
+          </li>
+          <script>
+            var fixedExpenseAmount = document.getElementById("fixedExpenseAmount{{ fixed_expense.id }}");
+            fixedExpenseAmount.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(parseFloat(fixedExpenseAmount.textContent));
+          </script>
+        {% endfor %}
+      </ul>
+
+      <!-- Display the total expense -->
+      <h2>Fixed Total Expenses: <span id="fixedTotalExpense">{{ fixed_total_expense }}<span/></h2>
+        <script>
+          var fixedTotalExpense = document.getElementById("fixedTotalExpense");
+          fixedTotalExpense.textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(parseFloat(fixedTotalExpense.textContent));
+        </script>
+  </div>
+
+  <script>
+    function deleteExpense(expenseId, type) {
+      console.log('Deleting expense with ID:', expenseId, 'Type:', type);
+  
+      // Use fetch API to send a DELETE request to the server
+      fetch('/delete-expense', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          expenseId: expenseId,
+          expenseType: type,
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Handle the response from the server, e.g., show a message or update the UI
+        console.log(data);
+        // Optionally, you can reload the page or update the UI dynamically
+        location.reload(); // Example: Reload the page
+      })
+      .catch(error => {
+        console.error('Error deleting expense:', error);
+      });
+    }
+  </script>
+
+<script>
+  function capitalizeDescription(input) {
+    var words = input.value.split(' ');
+    for (var i = 0; i < words.length; i++) {
+      words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1);
+    }
+    input.value = words.join(' ')
+  }
+</script>
+</div>
+{% endblock %}
