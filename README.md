@@ -1,8 +1,8 @@
-# Flask Web App Tutorial
+# Financial Expense Tracker Web App
 
 ## Setup & Installation
 
-Make sure you have the latest version of Python installed.
+Check to make sure that you have the most recent version of python installed
 
 ```bash
 git clone <repo-url>
